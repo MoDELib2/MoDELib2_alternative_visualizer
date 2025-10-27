@@ -409,9 +409,108 @@ PYBIND11_MODULE(pyMoDELib,m)
         .def("runSteps",&DefectiveCrystal<3>::runSteps)
     ;
 
+    // ********************* added by Matt ******************************
+    // Network Node and Network Link
+    py::bind_map<std::map<typename NetworkNodeType::KeyType,const std::weak_ptr<NetworkNodeType>>>(m, "NetworkNodeWeakPtrMap");
+    py::bind_map<std::map<typename DislocationNetworkType::NetworkLinkType::KeyType,const std::weak_ptr<DislocationNetworkType::NetworkLinkType>>>(m, "NetworkLinkWeakPtrMap");
+
+    py::class_<WeakPtrFactory<DislocationNetworkType, NetworkNodeType>
+    /*      */,std::map<typename NetworkNodeType::KeyType,const std::weak_ptr<NetworkNodeType>>
+    /*      */>(m,"NetworkNodeWeakPtrFactory")
+            .def(py::init<>())
+            .def("getRef",&WeakPtrFactory<DislocationNetworkType,NetworkNodeType>::getRef,pybind11::return_value_policy::reference)
+    ;
+
+    py::class_<WeakPtrFactory<DislocationNetworkType, DislocationNetworkType::NetworkLinkType>
+    /*      */,std::map<typename DislocationNetworkType::NetworkLinkType::KeyType,const std::weak_ptr<DislocationNetworkType::NetworkLinkType>>
+    /*      */>(m,"NetworkLinkWeakPtrFactory")
+            .def(py::init<>())
+            .def("getRef",&WeakPtrFactory<DislocationNetworkType,DislocationNetworkType::NetworkLinkType>::getRef,pybind11::return_value_policy::reference)
+    ;
+
+    py::class_<NetworkNodeType, std::shared_ptr<NetworkNodeType>>(m, "NetworkNode")
+        .def("networkID", &NetworkNodeType::networkID)
+        .def("loopIDs", &NetworkNodeType::loopIDs)
+        .def("loops", &NetworkNodeType::loops)
+        .def("loopNodes", static_cast<const std::set<typename TypeTraits<DislocationNetworkType>::LoopNodeType*>& (NetworkNodeType::*)() const>(&NetworkNodeType::loopNodes))
+        .def("gID", &NetworkNodeType::gID)
+        .def("position", [](const NetworkNodeType& node) { return node.get_P(); })
+    ;
+
+    py::class_<DislocationNetworkType::NetworkLinkType, std::shared_ptr<DislocationNetworkType::NetworkLinkType>>(m, "NetworkLink")
+        .def_readonly("source", &DislocationNetworkType::NetworkLinkType::source)
+        .def_readonly("sink", &DislocationNetworkType::NetworkLinkType::sink)
+        .def("loopIDs", &DislocationNetworkType::NetworkLinkType::loopIDs)
+        .def("loops", &DislocationNetworkType::NetworkLinkType::loops)
+        .def("burgers", &DislocationNetworkType::NetworkLinkType::burgers)
+        .def("chord", &DislocationNetworkType::NetworkLinkType::chord)
+        .def("slipSystem", &DislocationNetworkType::NetworkLinkType::slipSystem)
+        .def("hasZeroBurgers", &DislocationNetworkType::NetworkLinkType::hasZeroBurgers)
+        .def("isBoundarySegment", &DislocationNetworkType::NetworkLinkType::isBoundarySegment)
+        .def("isGrainBoundarySegment", &DislocationNetworkType::NetworkLinkType::isGrainBoundarySegment);
+    ;
+
+    // -------------------- IO Structs --------------------
+    py::class_<model::DislocationNodeIO<3>>(m, "DislocationNodeIO")
+        .def_readonly("sID", &model::DislocationNodeIO<3>::sID)
+        .def_readonly("P", &model::DislocationNodeIO<3>::P)
+        .def_readonly("V", &model::DislocationNodeIO<3>::V)
+        .def_readonly("climbVelocityScalar", &model::DislocationNodeIO<3>::climbVelocityScalar)
+        .def_readonly("velocityReduction", &model::DislocationNodeIO<3>::velocityReduction)
+        .def_readonly("meshLocation", &model::DislocationNodeIO<3>::meshLocation)
+    ;
+
+    py::class_<model::DislocationLoopIO<3>>(m, "DislocationLoopIO")
+        .def_readonly("sID", &model::DislocationLoopIO<3>::sID)
+        .def_readonly("B", &model::DislocationLoopIO<3>::B)
+        .def_readonly("N", &model::DislocationLoopIO<3>::N)
+        .def_readonly("P", &model::DislocationLoopIO<3>::P)
+        .def_readonly("grainID", &model::DislocationLoopIO<3>::grainID)
+        .def_readonly("loopType", &model::DislocationLoopIO<3>::loopType)
+        .def_readonly("loopLength", &model::DislocationLoopIO<3>::loopLength)
+        .def_readonly("slippedArea", &model::DislocationLoopIO<3>::slippedArea)
+    ;
+
+    py::class_<model::DislocationLoopLinkIO<3>>(m, "DislocationLoopLinkIO")
+        .def_readonly("loopID", &model::DislocationLoopLinkIO<3>::loopID)
+        .def_readonly("sourceID", &model::DislocationLoopLinkIO<3>::sourceID)
+        .def_readonly("sinkID", &model::DislocationLoopLinkIO<3>::sinkID)
+        .def_readonly("hasNetworkLink", &model::DislocationLoopLinkIO<3>::hasNetworkLink)
+        .def_readonly("meshLocation", &model::DislocationLoopLinkIO<3>::meshLocation)
+    ;
+
+    py::class_<model::DislocationLoopNodeIO<3>>(m, "DislocationLoopNodeIO")
+        .def_readonly("loopID", &model::DislocationLoopNodeIO<3>::loopID)
+        .def_readonly("sID", &model::DislocationLoopNodeIO<3>::sID)
+        .def_readonly("P", &model::DislocationLoopNodeIO<3>::P)
+        .def_readonly("networkNodeID", &model::DislocationLoopNodeIO<3>::networkNodeID)
+        .def_readonly("periodicShift", &model::DislocationLoopNodeIO<3>::periodicShift)
+        .def_readonly("edgeIDs", &model::DislocationLoopNodeIO<3>::edgeIDs)
+    ;
+
+    py::bind_map<std::map<std::pair<size_t,size_t>,DislocationSegmentIO<3>>>(m, "DislocationSegmentIOmap"); // THIS GIVES ERROR
+
+    py::class_<model::DislocationSegmentIO<3>>(m, "DislocationSegmentIO")
+        .def_readonly("sourceID", &model::DislocationSegmentIO<3>::sourceID)
+        .def_readonly("sinkID", &model::DislocationSegmentIO<3>::sinkID)
+        .def_readonly("b", &model::DislocationSegmentIO<3>::b)
+        .def_readonly("n", &model::DislocationSegmentIO<3>::n)
+        .def_readonly("meshLocation", &model::DislocationSegmentIO<3>::meshLocation)
+        .def_readonly("grainIDs", &model::DislocationSegmentIO<3>::grainIDs)
+        //.def_readonly("loopCounter", &model::DislocationSegmentIO<3>::loopCounter)
+    ;
+
+
+
     py::class_<DDconfigIO<3>
     /*      */>(m,"DDconfigIO")
         .def(py::init<const std::string&>())
+        .def("readTxt", &model::DDconfigIO<3>::readTxt, py::arg("runID"))
+        .def_property_readonly("nodes", static_cast<const std::vector<model::DislocationNodeIO<3>>& (model::DDconfigIO<3>::*)() const>(&model::DDconfigIO<3>::nodes))
+        .def_property_readonly("loops", static_cast<const std::vector<model::DislocationLoopIO<3>>& (model::DDconfigIO<3>::*)() const>(&model::DDconfigIO<3>::loops))
+        .def_property_readonly("loopLinks", static_cast<const std::vector<model::DislocationLoopLinkIO<3>>& (model::DDconfigIO<3>::*)() const>(&model::DDconfigIO<3>::loopLinks))
+        .def_property_readonly("loopNodes", static_cast<const std::vector<model::DislocationLoopNodeIO<3>>& (model::DDconfigIO<3>::*)() const>(&model::DDconfigIO<3>::loopNodes))
+        .def("segments", &DDconfigIO<3>::segments)
     ;
     
     py::class_<MicrostructureGenerator
