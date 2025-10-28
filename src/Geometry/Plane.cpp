@@ -8,6 +8,7 @@
 #ifndef model_Plane_CPP_
 #define model_Plane_CPP_
 
+#include <cassert>
 #include <cfloat>
 #include <tuple>
 #include <Eigen/Dense>

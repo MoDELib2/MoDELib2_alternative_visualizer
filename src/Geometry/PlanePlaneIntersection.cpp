@@ -8,6 +8,7 @@
 #ifndef model_PlanePlaneIntersection_CPP_
 #define model_PlanePlaneIntersection_CPP_
 
+#include <cassert>
 #include <tuple>
 #include <map>
 #include <Eigen/Dense>

@@ -8,6 +8,7 @@
 #ifndef model_LineSimplexIntersection_CPP_
 #define model_LineSimplexIntersection_CPP_
 
+#include <cassert>
 #include <cfloat>
 #include <tuple>
 #include <map>
