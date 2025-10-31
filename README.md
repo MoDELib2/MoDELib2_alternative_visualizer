@@ -19,6 +19,7 @@
   src/Lattices/LatticeLine.cpp:#include <cassert>
   src/Lattices/LatticeVector.cpp:#include <cassert>
   src/Lattices/RLLL.cpp:#include <cassert>
+  src/Lattices/LLL.cpp:#include <cassert>
   src/Lattices/RationalLatticeDirection.cpp:#include <cassert>
   src/Lattices/ReciprocalLatticeVector.cpp:#include <cassert>
   src/Mesh/BarycentricTraits.cpp:#include <cassert>
